@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OKIENAK | Catatan Sederhana</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ---------------------------------------------------- */
+/* Minimal CSS - Warna Ungu & Desain Halus */
+/* ---------------------------------------------------- */
+:root {
+    --primary-color: #7A00FF; /* Warna Ungu */
+    --primary-light: #F0E6FF; 
+    --background-color: #F5F7FA;
+    --text-color: #333;
+    --error-color: #FF4D4F;
+    --shadow-color: rgba(0, 0, 0, 0.08); /* Shadow lebih halus */
+}
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    font-family: 'Poppins', sans-serif; 
+}
+html, body { 
+    min-height: 100%; 
+    background: var(--background-color); 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    padding: 20px 0;
+}
+.container { 
+    width: 95%; 
+    max-width: 500px; 
+    background: #fff; 
+    border-radius: 16px; /* Sudut lebih membulat */
+    padding: 2rem; 
+    box-shadow: 0 8px 30px var(--shadow-color); /* Shadow lebih halus & tersebar */
+    margin-bottom: 20px;
+}
+h1 { 
+    text-align: center; 
+    color: var(--primary-color); 
+    margin-bottom: 1.5rem; /* Margin lebih besar */
+}
+input, textarea, button { 
+    width: 100%; 
+    border-radius: 10px; /* Sudut lebih halus */
+    border: 1px solid #e0e0e0;
+    padding: 0.8rem; 
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+input:focus, textarea:focus {
+    border-color: var(--primary-color);
+}
+button { 
+    background: var(--primary-color); 
+    color: #fff; 
+    cursor: pointer; 
+    font-weight: 600; 
+    border: none;
+}
+button:hover { 
+    filter: brightness(1.1); 
+    transform: translateY(-1px); /* Efek hover halus */
+}
+.tab { 
+    display: flex; 
+    margin-bottom: 1.5rem; 
+    border-radius: 12px;
+    background: var(--primary-light);
+    padding: 5px;
+}
+.tab button { 
+    flex: 1; 
+    margin: 0;
+    background: transparent;
+    color: var(--primary-color);
+    border: none;
+    padding: 0.7rem;
+    border-radius: 8px; /* Sudut tombol tab */
+}
+.active-tab { 
+    background: var(--primary-color) !important; 
+    color: #fff !important; 
+    font-weight: 700;
+}
+.hidden { 
+    display: none !important; 
+}
+.note-card { 
+    background: var(--primary-light); 
+    border-radius: 10px; 
+    padding: 1rem; 
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Shadow halus pada card */
+}
+.note-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+.note-actions button, .note-actions a {
+    width: auto;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0;
+    font-size: 0.9rem;
+    border-radius: 6px;
+}
+.btn-delete {
+    background: var(--error-color);
+}
+.btn-delete:hover {
+    background: #c93030;
+}
+a { 
+    color: var(--primary-color); 
+    text-decoration: none;
+    font-weight: 600;
+}
+footer {
+    text-align: center;
+    color: #888;
+    margin-top: 30px;
+    font-size: 0.9rem;
+}
+</style>
+</head>
+<body>
+
+<div class="container" id="auth-container">
+    <h1>🔑 OKIENAK</h1>
+    <div class="tab">
+        <button id="login-tab" class="active-tab">Masuk</button>
+        <button id="register-tab">Daftar</button>
+    </div>
+    <div id="login-form">
+        <input id="login-email" type="text" placeholder="Email (Contoh: user@note.com)">
+        <input id="login-password" type="password" placeholder="Password">
+        <button id="login-btn">Masuk</button>
+    </div>
+    <div id="register-form" class="hidden">
+        <input id="reg-email" type="text" placeholder="Email (Contoh: user@note.com)">
+        <input id="reg-password" type="password" placeholder="Password">
+        <button id="register-btn">Daftar Akun</button>
+    </div>
+</div>
+
+<div class="container hidden" id="note-container">
+    <h1>📝 Catatan Saya</h1>
+    <p style="font-size:1.1rem; margin-bottom:1rem;">Halo, <strong id="user-name" style="color:var(--primary-color);"></strong></p>
+    
+    <textarea id="note-input" placeholder="Tulis catatan baru di sini..."></textarea>
+    <button id="add-note-btn">Tambah Catatan</button>
+    
+    <div id="notes-list" style="margin-top: 1rem;"></div>
+    
+    <button id="logout-btn" class="btn-delete" style="margin-top: 1rem;">Keluar</button>
+</div>
+
+<footer>
+    © 2024 OKIENAK | Kontak: <a href="mailto:cidmomo19@gmail.com">cidmomo19@gmail.com</a>
+</footer>
+
+<script>
+const authContainer = document.getElementById("auth-container");
+const noteContainer = document.getElementById("note-container");
+const loginTab = document.getElementById("login-tab");
+const registerTab = document.getElementById("register-tab");
+const loginEmail = document.getElementById("login-email");
+const loginPassword = document.getElementById("login-password");
+const loginBtn = document.getElementById("login-btn");
+const regEmail = document.getElementById("reg-email");
+const regPassword = document.getElementById("reg-password");
+const registerBtn = document.getElementById("register-btn");
+const userName = document.getElementById("user-name");
+const noteInput = document.getElementById("note-input");
+const addNoteBtn = document.getElementById("add-note-btn");
+const notesList = document.getElementById("notes-list");
+const logoutBtn = document.getElementById("logout-btn");
+
+// Helper Functions
+const getUsers = () => JSON.parse(localStorage.getItem("users") || "{}");
+const saveUsers = (users) => localStorage.setItem("users", JSON.stringify(users));
+const getLoggedInUserEmail = () => localStorage.getItem("loggedIn");
+
+// ==== Tab Switching ====
+loginTab.addEventListener("click",()=>{
+    loginTab.classList.add("active-tab");
+    registerTab.classList.remove("active-tab");
+    document.getElementById("login-form").classList.remove("hidden");
+    document.getElementById("register-form").classList.add("hidden");
+});
+registerTab.addEventListener("click",()=>{
+    registerTab.classList.add("active-tab");
+    loginTab.classList.remove("active-tab");
+    document.getElementById("register-form").classList.remove("hidden");
+    document.getElementById("login-form").classList.add("hidden");
+});
+
+// ==== REGISTER ====
+registerBtn.addEventListener("click",()=>{
+    const email = regEmail.value.trim();
+    const pass = regPassword.value.trim();
+    
+    if(!email || !pass) return alert("Isi email & password!");
+    if(pass.length < 3) return alert("Password minimal 3 karakter!");
+    
+    let users = getUsers();
+    if(users[email]) return alert("Email sudah terdaftar!");
+    
+    users[email] = {password:pass, notes:[]}; 
+    saveUsers(users);
+
+    alert("Daftar berhasil! Silakan masuk.");
+    regEmail.value=""; regPassword.value="";
+    loginTab.click();
+});
+
+// ==== LOGIN ====
+loginBtn.addEventListener("click",()=>{
+    const email = loginEmail.value.trim();
+    const pass = loginPassword.value.trim();
+    let users = getUsers();
+    
+    if(users[email] && users[email].password===pass){
+        localStorage.setItem("loggedIn", email);
+        showNotesPage(email);
+        loginEmail.value=""; loginPassword.value="";
+    } else {
+        alert("Email atau password salah!");
+    }
+});
+
+// ==== LOGOUT ====
+logoutBtn.addEventListener("click",()=>{
+    localStorage.removeItem("loggedIn");
+    location.reload();
+});
+
+// ==== SHOW NOTES PAGE ====
+function showNotesPage(email){
+    authContainer.classList.add("hidden");
+    noteContainer.classList.remove("hidden");
+    userName.textContent = email.split('@')[0]; 
+    renderNotes();
+}
+
+// ==== ADD NOTE ====
+addNoteBtn.addEventListener("click",()=>{
+    const text = noteInput.value.trim();
+    if(!text) return alert("Tulis catatan dulu!");
+    
+    const email = getLoggedInUserEmail();
+    let users = getUsers();
+    
+    users[email].notes.unshift(text);
+    saveUsers(users);
+    noteInput.value="";
+    renderNotes();
+});
+
+// ==== DELETE NOTE ====
+function deleteNote(index){
+    if(!confirm("Anda yakin ingin menghapus catatan ini?")) return;
+    const email = getLoggedInUserEmail();
+    let users = getUsers();
+    users[email].notes.splice(index, 1); 
+    saveUsers(users);
+    renderNotes();
+}
+
+// ==== RENDER NOTES ====
+function renderNotes(){
+    notesList.innerHTML="";
+    const email = getLoggedInUserEmail();
+    let users = getUsers();
+    if(!users[email]) return;
+    let notes = users[email].notes;
+
+    notes.forEach((note,i)=>{
+        const div = document.createElement("div");
+        div.className="note-card";
+        
+        div.innerHTML=`
+            <p>${linkify(note)}</p>
+            <div class="note-actions">
+                <a href="?note=${email}-${i}" target="_blank">Bagikan (URL)</a>
+                <button class="btn-delete" data-index="${i}">Hapus</button>
+            </div>
+        `;
+        notesList.appendChild(div);
+    });
+
+    notesList.querySelectorAll(".btn-delete").forEach(btn => {
+        btn.addEventListener("click", (e) => deleteNote(e.target.dataset.index));
+    });
+    
+    if(notes.length === 0) {
+        notesList.innerHTML = `<p style="text-align:center; color:#888;">Belum ada catatan.</p>`;
+    }
+}
+
+// Fungsi untuk membuat teks URL menjadi clickable
+function linkify(text){
+    const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+    return text.replace(urlPattern, '<a href="$1" target="_blank">$1</a>');
+}
+
+// ==== AUTO LOGIN & PUBLIC SHARE VIEW ====
+window.addEventListener("load",()=>{
+    const logged = getLoggedInUserEmail();
+    const params = new URLSearchParams(window.location.search);
+    const noteParam = params.get("note");
+    
+    if(noteParam){
+        const [email,index] = noteParam.split("-");
+        let users = getUsers();
+        
+        if(users[email] && users[email].notes[index]){
+            authContainer.classList.add("hidden");
+            noteContainer.classList.remove("hidden");
+            userName.textContent = "Publik"; // Mode tampilan publik
+            
+            // Tampilan Catatan Publik
+            notesList.innerHTML=`
+                <h2 style="color:var(--primary-color); margin-bottom:1rem; text-align:center;">Catatan yang Dibagikan</h2>
+                <div class="note-card">
+                    <p>${linkify(users[email].notes[index])}</p>
+                </div>
+            `;
+            
+            // Sembunyikan semua kontrol yang tidak diperlukan di mode publik
+            document.querySelector('.container h1').textContent = "Catatan Publik";
+            document.querySelector('.container p').style.display = "none";
+            noteInput.style.display="none";
+            addNoteBtn.style.display="none";
+            logoutBtn.style.display="none";
+        } else {
+            // Jika URL share tidak valid, kembali ke autentikasi
+            authContainer.classList.remove("hidden");
+        }
+    } 
+    else if(logged) {
+        showNotesPage(logged);
+    } 
+    else {
+        authContainer.classList.remove("hidden");
+    }
+});
+</script>
+
+</body>
+  </html>
